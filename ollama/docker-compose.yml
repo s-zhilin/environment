@@ -1,0 +1,8 @@
+services:
+  ollama:
+    image: ollama/ollama:0.30.11
+    container_name: ollama
+    volumes:
+      - ./ollama-data:/root/.ollama
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "-c", "(until ollama list >/dev/null 2>&1; do sleep 1; done; for m in ${OLLAMA_MODELS}; do ollama pull $$m; done) & exec ollama serve"]
