@@ -1,0 +1,16 @@
+services:
+  pencil:
+    image: ghcr.io/zseven-w/openpencil:latest
+    container_name: pencil
+    restart: unless-stopped
+    volumes:
+      - pencil-claude:/root/.claude
+    networks:
+      - core
+
+volumes:
+  pencil-claude:
+
+networks:
+  core:
+    external: true

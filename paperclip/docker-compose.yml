@@ -1,0 +1,56 @@
+services:
+  paperclip:
+    build:
+      context: ./src
+      dockerfile: Dockerfile
+    container_name: paperclip
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      HOST: "0.0.0.0"
+      PAPERCLIP_HOME: /paperclip
+      DATABASE_URL: postgres://paperclip:paperclip@db:5432/paperclip
+      SERVE_UI: "true"
+      PAPERCLIP_DEPLOYMENT_MODE: local_trusted
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: private
+      PAPERCLIP_PUBLIC_URL: ${PAPERCLIP_PUBLIC_URL}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+    volumes:
+      - paperclip-data:/paperclip
+    networks:
+      - core
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=core"
+      - "traefik.http.routers.paperclip.rule=Host(`${PAPERCLIP_HOST}`)"
+      - "traefik.http.routers.paperclip.entrypoints=${TRAEFIK_ENTRYPOINT}"
+      - "traefik.http.services.paperclip.loadbalancer.server.port=3100"
+
+  db:
+    image: postgres:17-alpine
+    container_name: paperclip-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: paperclip
+      POSTGRES_PASSWORD: paperclip
+      POSTGRES_DB: paperclip
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paperclip -d paperclip"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+    volumes:
+      - paperclip-pgdata:/var/lib/postgresql/data
+    networks:
+      - core
+
+volumes:
+  paperclip-data:
+  paperclip-pgdata:
+
+networks:
+  core:
+    external: true
