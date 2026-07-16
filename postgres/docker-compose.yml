@@ -9,7 +9,10 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      # PG18 хранит данные в /var/lib/postgresql/18/docker — том монтируется
+      # на уровень выше. Монтирование в /var/lib/postgresql/data (путь PG17
+      # и старше) образ считает следом неудавшегося апгрейда и не стартует.
+      - postgres_data:/var/lib/postgresql
     networks:
       - services
     logging:

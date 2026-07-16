@@ -1,0 +1,15 @@
+http:
+  middlewares:
+    keycloak-authorizer:
+      plugin:
+        traefik-keycloak-authorizer:
+          Issuer: http://keycloak:8080/realms/auth
+          Audience: mobile-resource-server
+
+          WithPermissions: false
+
+          HeaderMap:
+            X-Auth-Subject: sub
+            X-Auth-Username: preferred_username
+            X-Auth-Email: email
+            X-Auth-Client-Id: azp

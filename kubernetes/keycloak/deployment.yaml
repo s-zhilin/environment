@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+        - name: keycloak
+          # Плагины compose подкидывает томом из ./plugins; в кластере тома
+          # с хоста нет — под провайдеры нужен свой образ на базе этого,
+          # собранный и запушенный в реестр.
+          image: quay.io/keycloak/keycloak:26.5
+          args: ["start"]
+          envFrom:
+            - secretRef:
+                name: keycloak
+          env:
+            # Health-эндпоинты Keycloak с версии 25 живут на отдельном
+            # management-порту 9000, а не на 8080 вместе с трафиком.
+            - name: KC_HEALTH_ENABLED
+              value: "true"
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: management
+              containerPort: 9000
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: management
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: management
+            initialDelaySeconds: 60
+            periodSeconds: 20

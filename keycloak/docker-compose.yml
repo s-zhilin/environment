@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.5
+    container_name: keycloak
+    restart: always
+    command: start
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+
+      KC_DB: ${KEYCLOAK_DB}
+      KC_DB_URL: ${KEYCLOAK_DB_URL}
+      KC_DB_USERNAME: ${KEYCLOAK_DB_USERNAME}
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+
+      KC_PROXY_HEADERS: ${KEYCLOAK_PROXY_HEADER}
+      KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
+      KC_HOSTNAME_STRICT: ${KEYCLOAK_HOSTNAME_STRICT}
+      KC_HTTP_ENABLED: ${KEYCLOAK_HTTP_ENABLED}
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+      - ./plugins:/opt/keycloak/providers:ro
+    networks:
+      - services
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+
+networks:
+  services:
+    external: true
+
+volumes:
+  keycloak_data:

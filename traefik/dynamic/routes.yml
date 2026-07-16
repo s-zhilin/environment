@@ -1,0 +1,16 @@
+http:
+  routers:
+
+    auth:
+      rule: "Host(`auth.example.com`)"
+      entryPoints: [websecure]
+      service: keycloak-upstream
+      tls:
+        certResolver: le
+
+  services:
+
+    keycloak-upstream:
+      loadBalancer:
+        servers:
+          - url: "http://keycloak:8080"
